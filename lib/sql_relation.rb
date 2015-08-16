@@ -1,7 +1,7 @@
 require_relative 'db_connection'
 require_relative 'sql_object'
 
-class Relation
+class SQLRelation
   attr_reader :klass
 
   def initialize(klass)
@@ -10,7 +10,7 @@ class Relation
   end
 
   def to_a
-    collection.map { |sql_object| sql_object.dup }
+    collection.map { |sql_object| sql_object }
   end
 
   def <<(sql_object)

@@ -1,4 +1,5 @@
 require_relative 'db_connection'
+require_relative 'sql_relation'
 require 'active_support/inflector'
 
 class SQLObject
@@ -33,6 +34,14 @@ class SQLObject
     @table_name ||= to_s.tableize
   end
 
+  def self.parse_all(attributes)
+    sql_relation = SQLRelation.new(to_s.constantize)
+
+    attributes.each { |attributes| sql_relation << new(attributes) }
+
+    sql_relation
+  end
+
   def self.all
     results = DBConnection.execute(<<-SQL)
       SELECT
@@ -44,19 +53,8 @@ class SQLObject
     parse_all(results)
   end
 
-  def self.parse_all(attributes)
-    attributes.map do |attributes|
-      new(attributes)
-    end
-  end
-
-  def self.count
-    DBConnection.execute(<<-SQL).first.values.first.to_i
-      SELECT
-        COUNT(*)
-      FROM
-        #{table_name}
-    SQL
+  def self.where(params)
+    all.where(params)
   end
 
   def self.find(id)
@@ -70,6 +68,15 @@ class SQLObject
     SQL
 
     new(results.first) if results.any?
+  end
+
+  def self.count
+    DBConnection.execute(<<-SQL).first.values.first.to_i
+      SELECT
+        COUNT(*)
+      FROM
+        #{table_name}
+    SQL
   end
 
   def initialize(params = {})
