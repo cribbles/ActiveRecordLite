@@ -53,13 +53,15 @@ class SQLRelation
   end
 
   def limit(num)
-    results = DBConnection.execute(<<-SQL)
+    params, values = where_params
+
+    results = DBConnection.execute(<<-SQL, *values)
       SELECT
         #{table_name}.*
       FROM
         #{table_name}
       WHERE
-        #{where_params}
+        #{params}
       LIMIT
         #{num}
     SQL
