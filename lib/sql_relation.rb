@@ -10,7 +10,9 @@ class SQLRelation
   end
 
   def to_a
-    force.collection.map { |sql_object| sql_object }
+    force if collection.empty?
+
+    collection.map { |sql_object| sql_object }
   end
 
   def <<(sql_object)
@@ -92,9 +94,29 @@ class SQLRelation
     klass.parse_all(results)
   end
 
-  private
+  def update_all(params)
+    update_keys = params.keys.map { |attr| "#{attr} = ?" }.join(", ")
+    update_values = params.values
+    rows = force.to_a.map(&:id).join(", ")
 
+    puts update_keys
+
+    DBConnection.execute(<<-SQL, *update_values)
+      UPDATE
+        #{table_name}
+      SET
+        #{update_keys}
+      WHERE
+        id IN (#{rows})
+    SQL
+
+    force
+  end
+
+  protected
   attr_reader :collection
+
+  private
 
   def sql_params
     params, values = [], []
