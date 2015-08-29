@@ -107,7 +107,7 @@ class SQLRelation
         #{sql_params[:params]}
     SQL
 
-    klass.parse_all(results)
+    parse_all(results)
   end
 
   def last
@@ -126,7 +126,7 @@ class SQLRelation
         #{num}
     SQL
 
-    klass.parse_all(results)
+    parse_all(results)
   end
 
   def none?(params = nil, &blk)
@@ -174,6 +174,10 @@ class SQLRelation
   attr_reader :collection
 
   private
+
+  def parse_all(attributes)
+    klass.parse_all(attributes).where(where_params_hash)
+  end
 
   def sql_params
     params, values = [], []

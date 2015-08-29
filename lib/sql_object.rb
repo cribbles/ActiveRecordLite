@@ -70,7 +70,6 @@ class SQLObject
     parse_all(results)
   end
 
-
   def self.count
     DBConnection.get_first_value(<<-SQL)
       SELECT
