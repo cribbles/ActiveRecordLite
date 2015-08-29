@@ -33,17 +33,12 @@ class SQLRelation
     self
   end
 
-  def force
-    results = DBConnection.execute(<<-SQL, *sql_params[:values])
-      SELECT
-        #{table_name}.*
-      FROM
-        #{table_name}
-      #{sql_params[:where]}
-        #{sql_params[:params]}
-    SQL
-
-    klass.parse_all(results)
+  def any?(&blk)
+    if block_given?
+      to_a.any? { |*args| blk.call(*args) }
+    else
+      !empty?
+    end
   end
 
   def count
@@ -57,19 +52,8 @@ class SQLRelation
     SQL
   end
 
-  def limit(num)
-    results = DBConnection.execute(<<-SQL, *sql_params[:values])
-      SELECT
-        #{table_name}.*
-      FROM
-        #{table_name}
-      #{sql_params[:where]}
-        #{sql_params[:params]}
-      LIMIT
-        #{num}
-    SQL
-
-    klass.parse_all(results)
+  def empty?
+    count == 0
   end
 
   def first
@@ -87,6 +71,34 @@ class SQLRelation
     SQL
 
     result ? klass.new(result) : nil
+  end
+
+  def force
+    results = DBConnection.execute(<<-SQL, *sql_params[:values])
+      SELECT
+        #{table_name}.*
+      FROM
+        #{table_name}
+      #{sql_params[:where]}
+        #{sql_params[:params]}
+    SQL
+
+    klass.parse_all(results)
+  end
+
+  def limit(num)
+    results = DBConnection.execute(<<-SQL, *sql_params[:values])
+      SELECT
+        #{table_name}.*
+      FROM
+        #{table_name}
+      #{sql_params[:where]}
+        #{sql_params[:params]}
+      LIMIT
+        #{num}
+    SQL
+
+    klass.parse_all(results)
   end
 
   private
