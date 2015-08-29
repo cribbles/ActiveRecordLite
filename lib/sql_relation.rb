@@ -1,6 +1,8 @@
 require_relative 'db_connection'
 require_relative 'sql_object'
 
+ENUMERABLE_METHODS = [:all?, :any?, :none?, :one?]
+
 class SQLRelation
   attr_reader :klass
 
@@ -35,9 +37,25 @@ class SQLRelation
     self
   end
 
-  def any?(&blk)
+  def all?(params = nil, &blk)
+    raise "block sent with params" if params && block_given?
+
+    if block_given?
+      to_a.all? { |*args| blk.call(*args) }
+    elsif params
+      dup.where(params).count == count
+    else
+      to_a.all? { |obj| sql_object }
+    end
+  end
+
+  def any?(params = nil, &blk)
+    raise "block sent with params" if params && block_given?
+
     if block_given?
       to_a.any? { |*args| blk.call(*args) }
+    elsif params
+      dup.where(params).count > 0
     else
       !empty?
     end
@@ -109,6 +127,30 @@ class SQLRelation
     SQL
 
     klass.parse_all(results)
+  end
+
+  def none?(params = nil, &blk)
+    raise "block sent with params" if params && block_given?
+
+    if block_given?
+      to_a.none? { |*args| blk.call(*args) }
+    elsif params
+      dup.where(params).empty?
+    else
+      empty?
+    end
+  end
+
+  def one?(params = nil, &blk)
+    raise "block sent with params" if params && block_given?
+
+    if block_given?
+      to_a.one? { |*args| blk.call(*args) }
+    elsif params
+      dup.where(params).one? { |*args| blk.call(*args) }
+    else
+      count == 1
+    end
   end
 
   def update_all(params)

@@ -1,6 +1,17 @@
 require_relative 'db_connection'
 require_relative 'sql_relation'
 require 'active_support/inflector'
+require 'byebug'
+
+RELATION_METHODS = [
+  :all?,
+  :any?,
+  :delete_all,
+  :empty?,
+  :none?,
+  :one?,
+  :update_all
+]
 
 class SQLObject
   def self.columns
@@ -34,6 +45,20 @@ class SQLObject
     @table_name ||= to_s.tableize
   end
 
+  class << self
+    RELATION_METHODS.each do |method|
+      # This procedure just delegates ::any? and friends to their respective
+      # SQLRelation methods.  We send define_method a stabby lambda instead
+      # of a block because we can't pipe &blk arguments.
+
+      delegation_blk = ->(*args, &blk) do
+        self.all.send(method, *args, &blk)
+      end
+
+      define_method(method, delegation_blk)
+    end
+  end
+
   def self.all
     results = DBConnection.execute(<<-SQL)
       SELECT
@@ -45,6 +70,7 @@ class SQLObject
     parse_all(results)
   end
 
+
   def self.count
     DBConnection.get_first_value(<<-SQL)
       SELECT
@@ -52,10 +78,6 @@ class SQLObject
       FROM
         #{table_name}
     SQL
-  end
-
-  def self.delete_all(params = nil)
-    all.delete_all(params)
   end
 
   def self.find(id)
@@ -79,10 +101,6 @@ class SQLObject
     end
 
     sql_relation
-  end
-
-  def self.update_all(params)
-    all.update_all(params)
   end
 
   def self.where(params)
