@@ -23,57 +23,48 @@ class SQLRelation
     klass.table_name
   end
 
-  def where_values
-    @where_values ||= {}
+  def where_params_hash
+    @where_params_hash ||= {}
   end
 
   def where(params)
-    where_values.merge!(params)
+    where_params_hash.merge!(params)
 
     self
   end
 
   def force
-    params, values = where_params
-    where = (params.length > 0 ? "WHERE" : "")
-
-    results = DBConnection.execute(<<-SQL, *values)
+    results = DBConnection.execute(<<-SQL, *sql_params[:values])
       SELECT
         #{table_name}.*
       FROM
         #{table_name}
-      #{where}
-        #{params}
+      #{sql_params[:where]}
+        #{sql_params[:params]}
     SQL
 
     klass.parse_all(results)
   end
 
   def count
-    params, values = where_params
-    where = (params.length > 0 ? "WHERE" : "")
-
-    DBConnection.get_first_value(<<-SQL, *values)
+    DBConnection.get_first_value(<<-SQL, *sql_params[:values])
       SELECT
         COUNT(*)
       FROM
         #{table_name}
-      #{where}
-        #{params}
+      #{sql_params[:where]}
+        #{sql_params[:params]}
     SQL
   end
 
   def limit(num)
-    params, values = where_params
-    where = (params.length > 0 ? "WHERE" : "")
-
-    results = DBConnection.execute(<<-SQL, *values)
+    results = DBConnection.execute(<<-SQL, *sql_params[:values])
       SELECT
         #{table_name}.*
       FROM
         #{table_name}
-      #{where}
-        #{params}
+      #{sql_params[:where]}
+        #{sql_params[:params]}
       LIMIT
         #{num}
     SQL
@@ -82,16 +73,13 @@ class SQLRelation
   end
 
   def first
-    params, values = where_params
-    where = (params.length > 0 ? "WHERE" : "")
-
-    result = DBConnection.get_first_row(<<-SQL, *values)
+    result = DBConnection.get_first_row(<<-SQL, *sql_params[:values])
       SELECT
         #{table_name}.*
       FROM
         #{table_name}
-      #{where}
-        #{params}
+      #{sql_params[:where]}
+        #{sql_params[:params]}
       ORDER BY
         id ASC
       LIMIT
@@ -105,16 +93,18 @@ class SQLRelation
 
   attr_reader :collection
 
-  def where_params
+  def sql_params
     params, values = [], []
 
-    where_values.map do |attribute, value|
+    where_params_hash.map do |attribute, value|
       slug = value.is_a?(Fixnum) ? "?" : "'?'"
 
       params << "#{attribute} = #{slug}"
       values << value
     end
 
-    [params.join(" AND "), values]
+    { params: params.join(" AND "),
+      where:  (params.empty? ? "" : "WHERE"),
+      values: values }
   end
 end
