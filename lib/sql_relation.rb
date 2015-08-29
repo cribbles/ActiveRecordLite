@@ -54,15 +54,18 @@ class SQLRelation
     SQL
   end
 
-  def delete_all(params)
-    deleted = where(params).force
-    rows = deleted.to_a.map(&:id).join(", ")
+  def delete_all(params = nil)
+    if params.nil?
+      deleted = klass.all
+      where = nil
+    else
+      deleted = where(params).force
+      rows = deleted.to_a.map(&:id).join(", ")
+      where = "WHERE id IN (#{rows})"
+    end
 
     DBConnection.execute(<<-SQL)
-      DELETE FROM
-        #{table_name}
-      WHERE
-        id IN (#{rows})
+      DELETE FROM #{table_name} #{where}
     SQL
 
     deleted
@@ -141,7 +144,7 @@ class SQLRelation
     end
 
     { params: params.join(" AND "),
-      where:  (params.empty? ? "" : "WHERE"),
+      where:  (params.empty? ? nil : "WHERE"),
       values: values }
   end
 

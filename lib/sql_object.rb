@@ -54,7 +54,7 @@ class SQLObject
     SQL
   end
 
-  def self.delete_all(params)
+  def self.delete_all(params = nil)
     all.delete_all(params)
   end
 
