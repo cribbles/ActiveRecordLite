@@ -48,10 +48,6 @@ class SQLRelation
     klass.parse_all(results)
   end
 
-  def first
-    limit(1)
-  end
-
   def limit(num)
     params, values = where_params
 
@@ -67,6 +63,10 @@ class SQLRelation
     SQL
 
     klass.parse_all(results)
+  end
+
+  def first
+    limit(1)
   end
 
   private

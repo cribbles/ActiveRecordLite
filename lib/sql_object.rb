@@ -54,7 +54,7 @@ class SQLObject
   end
 
   def self.where(params)
-    all.where(params)
+    SQLRelation.new(to_s.constantize).where(params)
   end
 
   def self.find(id)
