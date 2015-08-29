@@ -54,6 +54,20 @@ class SQLRelation
     SQL
   end
 
+  def delete_all(params)
+    deleted = where(params).force
+    rows = deleted.to_a.map(&:id).join(", ")
+
+    DBConnection.execute(<<-SQL)
+      DELETE FROM
+        #{table_name}
+      WHERE
+        id IN (#{rows})
+    SQL
+
+    deleted
+  end
+
   def empty?
     count == 0
   end
@@ -98,8 +112,6 @@ class SQLRelation
     update_keys = params.keys.map { |attr| "#{attr} = ?" }.join(", ")
     update_values = params.values
     rows = force.to_a.map(&:id).join(", ")
-
-    puts update_keys
 
     DBConnection.execute(<<-SQL, *update_values)
       UPDATE
