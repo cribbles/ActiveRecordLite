@@ -57,20 +57,7 @@ class SQLRelation
   end
 
   def first
-    result = DBConnection.get_first_row(<<-SQL, *sql_params[:values])
-      SELECT
-        #{table_name}.*
-      FROM
-        #{table_name}
-      #{sql_params[:where]}
-        #{sql_params[:params]}
-      ORDER BY
-        id ASC
-      LIMIT
-        1
-    SQL
-
-    result ? klass.new(result) : nil
+    ultimate_row("ASC")
   end
 
   def force
@@ -84,6 +71,10 @@ class SQLRelation
     SQL
 
     klass.parse_all(results)
+  end
+
+  def last
+    ultimate_row("DESC")
   end
 
   def limit(num)
@@ -118,5 +109,22 @@ class SQLRelation
     { params: params.join(" AND "),
       where:  (params.empty? ? "" : "WHERE"),
       values: values }
+  end
+
+  def ultimate_row(order)
+    result = DBConnection.get_first_row(<<-SQL, *sql_params[:values])
+      SELECT
+        #{table_name}.*
+      FROM
+        #{table_name}
+      #{sql_params[:where]}
+        #{sql_params[:params]}
+      ORDER BY
+        id #{order}
+      LIMIT
+        1
+    SQL
+
+    result ? klass.new(result) : nil
   end
 end
