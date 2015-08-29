@@ -35,13 +35,14 @@ class SQLRelation
 
   def force
     params, values = where_params
+    where = (params.length > 0 ? "WHERE" : "")
 
     results = DBConnection.execute(<<-SQL, *values)
       SELECT
         #{table_name}.*
       FROM
         #{table_name}
-      WHERE
+      #{where}
         #{params}
     SQL
 
@@ -50,26 +51,28 @@ class SQLRelation
 
   def count
     params, values = where_params
+    where = (params.length > 0 ? "WHERE" : "")
 
     DBConnection.get_first_value(<<-SQL, *values)
       SELECT
         COUNT(*)
       FROM
         #{table_name}
-      WHERE
+      #{where}
         #{params}
     SQL
   end
 
   def limit(num)
     params, values = where_params
+    where = (params.length > 0 ? "WHERE" : "")
 
     results = DBConnection.execute(<<-SQL, *values)
       SELECT
         #{table_name}.*
       FROM
         #{table_name}
-      WHERE
+      #{where}
         #{params}
       LIMIT
         #{num}
@@ -80,14 +83,17 @@ class SQLRelation
 
   def first
     params, values = where_params
+    where = (params.length > 0 ? "WHERE" : "")
 
     result = DBConnection.get_first_row(<<-SQL, *values)
       SELECT
         #{table_name}.*
       FROM
         #{table_name}
-      WHERE
+      #{where}
         #{params}
+      ORDER BY
+        id ASC
       LIMIT
         1
     SQL
