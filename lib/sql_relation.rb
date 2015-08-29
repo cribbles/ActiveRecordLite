@@ -10,7 +10,7 @@ class SQLRelation
   end
 
   def to_a
-    collection.map { |sql_object| sql_object }
+    force.collection.map { |sql_object| sql_object }
   end
 
   def <<(sql_object)
