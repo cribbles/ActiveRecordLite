@@ -71,7 +71,7 @@ class SQLObject
   end
 
   def self.count
-    DBConnection.execute(<<-SQL).first.values.first.to_i
+    DBConnection.get_first_value(<<-SQL)
       SELECT
         COUNT(*)
       FROM

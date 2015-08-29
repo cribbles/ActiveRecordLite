@@ -48,6 +48,19 @@ class SQLRelation
     klass.parse_all(results)
   end
 
+  def count
+    params, values = where_params
+
+    DBConnection.get_first_value(<<-SQL, *values)
+      SELECT
+        COUNT(*)
+      FROM
+        #{table_name}
+      WHERE
+        #{params}
+    SQL
+  end
+
   def limit(num)
     params, values = where_params
 

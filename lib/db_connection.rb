@@ -30,16 +30,14 @@ class DBConnection
     @db
   end
 
-  def self.execute(*args)
-    puts args[0]
+  class << self
+    [:execute, :execute2, :get_first_value].each do |method|
+      define_method(method) do |*args|
+        puts args[0]
 
-    instance.execute(*args)
-  end
-
-  def self.execute2(*args)
-    puts args[0]
-
-    instance.execute2(*args)
+        instance.send(method, *args)
+      end
+    end
   end
 
   def self.last_insert_row_id
