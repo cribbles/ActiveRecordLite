@@ -79,7 +79,20 @@ class SQLRelation
   end
 
   def first
-    limit(1)
+    params, values = where_params
+
+    result = DBConnection.get_first_row(<<-SQL, *values)
+      SELECT
+        #{table_name}.*
+      FROM
+        #{table_name}
+      WHERE
+        #{params}
+      LIMIT
+        1
+    SQL
+
+    result ? klass.new(result) : nil
   end
 
   private

@@ -4,6 +4,12 @@ require 'sqlite3'
 ROOT_FOLDER = File.join(File.dirname(__FILE__), '..')
 CATS_SQL_FILE = File.join(ROOT_FOLDER, 'cats.sql')
 CATS_DB_FILE = File.join(ROOT_FOLDER, 'cats.db')
+CLASS_METHODS = [
+  :execute,
+  :execute2,
+  :get_first_row,
+  :get_first_value
+]
 
 class DBConnection
   def self.open(db_file_name)
@@ -31,7 +37,7 @@ class DBConnection
   end
 
   class << self
-    [:execute, :execute2, :get_first_value].each do |method|
+    CLASS_METHODS.each do |method|
       define_method(method) do |*args|
         puts args[0]
 

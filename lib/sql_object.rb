@@ -37,7 +37,9 @@ class SQLObject
   def self.parse_all(attributes)
     sql_relation = SQLRelation.new(to_s.constantize)
 
-    attributes.each { |attributes| sql_relation << new(attributes) }
+    attributes.each do |attributes|
+      sql_relation << new(attributes)
+    end
 
     sql_relation
   end
@@ -58,7 +60,7 @@ class SQLObject
   end
 
   def self.find(id)
-    results = DBConnection.execute(<<-SQL, id)
+    result = DBConnection.get_first_row(<<-SQL, id)
       SELECT
         #{table_name}.*
       FROM
@@ -67,7 +69,7 @@ class SQLObject
         #{table_name}.id = ?
     SQL
 
-    new(results.first) if results.any?
+    result ? self.new(result) : nil
   end
 
   def self.count
