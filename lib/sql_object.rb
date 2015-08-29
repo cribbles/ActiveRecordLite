@@ -34,16 +34,6 @@ class SQLObject
     @table_name ||= to_s.tableize
   end
 
-  def self.parse_all(attributes)
-    sql_relation = SQLRelation.new(to_s.constantize)
-
-    attributes.each do |attributes|
-      sql_relation << new(attributes)
-    end
-
-    sql_relation
-  end
-
   def self.all
     results = DBConnection.execute(<<-SQL)
       SELECT
@@ -55,8 +45,17 @@ class SQLObject
     parse_all(results)
   end
 
-  def self.where(params)
-    SQLRelation.new(to_s.constantize).where(params)
+  def self.count
+    DBConnection.get_first_value(<<-SQL)
+      SELECT
+        COUNT(*)
+      FROM
+        #{table_name}
+    SQL
+  end
+
+  def self.delete_all(params)
+    all.delete_all(params)
   end
 
   def self.find(id)
@@ -72,13 +71,22 @@ class SQLObject
     result ? self.new(result) : nil
   end
 
-  def self.count
-    DBConnection.get_first_value(<<-SQL)
-      SELECT
-        COUNT(*)
-      FROM
-        #{table_name}
-    SQL
+  def self.parse_all(attributes)
+    sql_relation = SQLRelation.new(to_s.constantize)
+
+    attributes.each do |attributes|
+      sql_relation << new(attributes)
+    end
+
+    sql_relation
+  end
+
+  def self.update_all(params)
+    all.update_all(params)
+  end
+
+  def self.where(params)
+    SQLRelation.new(to_s.constantize).where(params)
   end
 
   def initialize(params = {})
