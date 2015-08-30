@@ -12,9 +12,7 @@ class SQLRelation
   end
 
   def to_a
-    force if collection.empty?
-
-    collection.map { |sql_object| sql_object }
+    dup.force.collection
   end
 
   def <<(sql_object)
@@ -62,6 +60,8 @@ class SQLRelation
   end
 
   def count
+    return collection.count if where_params_hash.empty?
+
     DBConnection.get_first_value(<<-SQL, *sql_params[:values])
       SELECT
         COUNT(*)
@@ -183,9 +183,7 @@ class SQLRelation
     params, values = [], []
 
     where_params_hash.map do |attribute, value|
-      slug = value.is_a?(Fixnum) ? "?" : "'?'"
-
-      params << "#{attribute} = #{slug}"
+      params << "#{attribute} = ?"
       values << value
     end
 
