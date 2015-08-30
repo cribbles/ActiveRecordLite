@@ -74,18 +74,15 @@ describe SQLObject do
   end
 
   describe '::parse_all' do
-    it '::parse_all turns an array of hashes into objects' do
+    it '::parse_all turns an array of hashes into relations' do
       hashes = [
         { name: 'cat1', owner_id: 1 },
         { name: 'cat2', owner_id: 2 }
       ]
 
       cats = Cat.parse_all(hashes)
-      expect(cats.length).to eq(2)
-      hashes.each_index do |i|
-        expect(cats[i].name).to eq(hashes[i][:name])
-        expect(cats[i].owner_id).to eq(hashes[i][:owner_id])
-      end
+      expect(cats).to be_instance_of(SQLRelation)
+      expect(cats.count).to eq(2)
     end
   end
 

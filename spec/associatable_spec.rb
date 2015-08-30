@@ -135,7 +135,7 @@ describe 'Associatable' do
 
     it 'fetches `cats` from `Human`' do
       expect(ned).to respond_to(:cats)
-      cats = ned.cats
+      cats = ned.cats.to_a
 
       expect(cats.length).to eq(2)
 
@@ -150,16 +150,16 @@ describe 'Associatable' do
 
     it 'fetches `humans` from `House`' do
       expect(ned_house).to respond_to(:humans)
-      humans = ned_house.humans
+      humans = ned_house.humans.to_a
 
       expect(humans.length).to eq(1)
       expect(humans[0]).to be_instance_of(Human)
       expect(humans[0].fname).to eq('Ned')
     end
 
-    it 'returns an empty array if no associated items' do
+    it 'returns an empty relation if no associated items' do
       catless_human = Human.find(4)
-      expect(catless_human.cats).to eq([])
+      expect(catless_human.cats.empty?).to eq(true)
     end
   end
 
@@ -207,6 +207,7 @@ describe 'Associatable' do
 
     it 'fetches associated `home` for a `Cat`' do
       house = cat.home
+      puts cat.home.address
 
       expect(house).to be_instance_of(House)
       expect(house.address).to eq('26th and Guerrero')
