@@ -1,8 +1,6 @@
 require_relative 'db_connection'
 require_relative 'sql_object'
 
-ENUMERABLE_METHODS = [:all?, :any?, :none?, :one?]
-
 class SQLRelation
   attr_reader :klass
 
