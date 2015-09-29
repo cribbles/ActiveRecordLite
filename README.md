@@ -9,14 +9,10 @@ the overhead.
 
 ## Demo
 
-1) Clone the repo
-
-2) Head into `irb` or `pry`
-
-3) `load './demo.rb'`
-
-4) Go wild (using [`demo.rb`](./demo.rb) as a reference)
-
+1. Clone the repo
+2. Head into `irb` or `pry`
+3. `load './demo.rb'`
+4. Go wild (using [`demo.rb`](./demo.rb) as a reference)
 
 ## Libraries
 
