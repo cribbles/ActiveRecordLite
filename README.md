@@ -73,8 +73,8 @@ collection object. This means you can chain methods like so:
 
 ## How It Works
 
-SQLObject and SQLRelation make use of an instance of
-[`DBConnection`](/lib/db_connection.rb), which provides a simple interface for
+SQLObject and SQLRelation keep track of a singleton instance of
+[`DBConnection`](/lib/db_connection.rb), which provides a slim interface for
 accessing SQLite::Database instance methods like `#execute`, `#get_first_row`,
 `#last_insert_row_id`, etc.
 
