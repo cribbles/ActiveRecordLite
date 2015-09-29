@@ -65,7 +65,8 @@ SQLRelation provides all your favorite `Enumerable` methods:
 
 SQLObject [delegates enumerable methods](/lib/sql_object.rb#L53) (along with
 `::find`, `::where`, `::delete_all` and `::update_all`) to SQLRelation. For
-example, `Cat.any?` will iterate over the entire `Cat` collection.
+example, `Cat.any?` will iterate over the entire `cats` table and return an
+SQLRelation instance.
 
 SQLObject utility methods conventionally return an SQLRelation instance as a
 collection object. This means you can chain methods like so:
@@ -94,7 +95,7 @@ ActiveSupport::Inflector fails to guess your table name).
 ## Notes
 
 ActiveSupport::Inflector isn't a hard dependency; it's really only used in
-[`has_many`](.lib/has_many_options.rb), to provide sensible `class_name`
+[`has_many`](./lib/has_many_options.rb), to provide sensible `class_name`
 and `foreign_key` defaults (see above).
 
 If you _really_ want to trim overhead, you can get away with declaring options
