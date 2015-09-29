@@ -1,3 +1,4 @@
+require_relative 'associatable'
 require_relative 'db_connection'
 require_relative 'sql_relation'
 require 'active_support/inflector'
@@ -7,13 +8,17 @@ RELATION_METHODS = [
   :all?,
   :any?,
   :delete_all,
+  :first,
   :empty?,
+  :last,
   :none?,
   :one?,
   :update_all
 ]
 
 class SQLObject
+  extend Associatable
+
   def self.columns
     DBConnection.execute2(<<-SQL).first.map(&:to_sym)
       SELECT
@@ -93,27 +98,21 @@ class SQLObject
   end
 
   def self.parse_all(attributes)
-    sql_relation = SQLRelation.new(to_s.constantize)
-
-    attributes.each do |attributes|
-      sql_relation << new(attributes)
-    end
+    sql_relation = SQLRelation.new(self)
+    attributes.each { |attributes| sql_relation << self.new(attributes) }
 
     sql_relation
   end
 
   def self.where(params)
-    SQLRelation.new(to_s.constantize).where(params)
+    SQLRelation.new(self).where(params)
   end
 
   def initialize(params = {})
     columns = self.class.columns
 
     params.each do |column, value|
-      if !columns.include?(column.to_sym)
-        raise "unknown attribute '#{column}'"
-      end
-
+      raise "unknown attribute '#{column}'" if !columns.include?(column.to_sym)
       send("#{column}=", value)
     end
   end
@@ -126,7 +125,7 @@ class SQLObject
     attributes.values
   end
 
-  def insert
+  def create
     attributes[:id] ||= self.class.count + 1
 
     col_names = attributes.keys.map(&:to_s).join(", ")
@@ -153,12 +152,19 @@ class SQLObject
     SQL
   end
 
+  def destroy
+    updates = attributes.keys.map { |attr| "#{attr} = ?" }.join(", ")
+
+    DBConnection.execute(<<-SQL, attributes[:id])
+      DELETE FROM
+        #{table_name}
+      WHERE
+        id = ?
+    SQL
+  end
+
   def save
-    if attributes[:id].nil?
-      insert
-    else
-      update
-    end
+    attributes[:id] ? update : create
   end
 
   private

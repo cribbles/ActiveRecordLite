@@ -1,51 +1,8 @@
+require_relative 'assoc_options'
+require_relative 'belongs_to_options'
+require_relative 'has_many_options'
 require_relative 'sql_relation'
 require 'active_support/inflector'
-
-class AssocOptions
-  attr_accessor(
-    :foreign_key,
-    :class_name,
-    :primary_key
-  )
-
-  def model_class
-    class_name.to_s.constantize
-  end
-
-  def table_name
-    model_class.table_name
-  end
-
-  def initialize(options)
-    associations = { primary_key: :id }
-    associations.merge!(options)
-    associations.each { |assoc, value| send("#{assoc}=", value) }
-  end
-end
-
-class BelongsToOptions < AssocOptions
-  def initialize(name, options = {})
-    associations = {
-      class_name: name.to_s.capitalize,
-      foreign_key: "#{name}_id".to_sym
-    }
-
-    associations.merge!(options)
-    super(associations)
-  end
-end
-
-class HasManyOptions < AssocOptions
-  def initialize(name, self_class_name, options = {})
-    associations = {
-      class_name: name.to_s.camelcase.singularize,
-      foreign_key: "#{self_class_name.to_s.downcase.underscore}_id".to_sym
-    }
-
-    associations.merge!(options)
-    super(associations)
-  end
-end
 
 module Associatable
   def assoc_options
@@ -53,10 +10,10 @@ module Associatable
   end
 
   def belongs_to(name, options = {})
-    define_method(name) do
-      association = BelongsToOptions.new(name, options)
-      self.class.assoc_options[name] = association
+    association = BelongsToOptions.new(name, options)
+    self.assoc_options[name] = association
 
+    define_method(name) do
       model = association.model_class
       primary_key = association.primary_key
       foreign_key = association.foreign_key
@@ -67,10 +24,10 @@ module Associatable
   end
 
   def has_many(name, options = {})
-    define_method(name) do
-      association = HasManyOptions.new(name, self.class, options)
-      self.class.assoc_options[name] = association
+    association = HasManyOptions.new(name, self.class, options)
+    self.assoc_options[name] = association
 
+    define_method(name) do
       model = association.model_class
       primary_key = association.primary_key
       foreign_key = association.foreign_key
@@ -81,7 +38,7 @@ module Associatable
   end
 
   def has_one_through(name, through_name, source_name)
-    through_options = assoc_options[through_name]
+    through_options = self.assoc_options[through_name]
 
     define_method(name) do
       source_options = through_options.model_class.assoc_options[source_name]
@@ -110,8 +67,4 @@ module Associatable
       source_options.model_class.new(result)
     end
   end
-end
-
-class SQLObject
-  extend Associatable
 end
