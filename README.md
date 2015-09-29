@@ -73,10 +73,12 @@ collection object. This means you can chain methods like so:
 
 ## How It Works
 
-SQLObject and SQLRelation keep track of a singleton instance of
-[`DBConnection`](/lib/db_connection.rb), which provides a slim interface for
-accessing SQLite::Database instance methods like `#execute`, `#get_first_row`,
-`#last_insert_row_id`, etc.
+SQLObject and SQLRelation make reference to
+[`DBConnection`](/lib/db_connection.rb), which delegates SQLite::Database
+instance methods like `#execute`, `#get_first_row`, `#last_insert_row_id`, etc.
+to a singleton instance of SQLite::Database. Consumers of the API specify this
+instance by calling `DBConnection::open(file)`, providing an SQLite db file path
+as an argument.
 
 SQLObject and SQLRelation provide a utility belt of class/instance methods that
 map to SQL queries. You can make use of the SQLObject API by creating a class
